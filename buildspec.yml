@@ -1,0 +1,24 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      python: 3.8
+    commands:
+      - pip install -r requirements.txt
+  pre_build:
+    commands:
+      - |
+        SECRET_JSON=$(aws secretsmanager get-secret-value --secret-id MyAppSecrets --query SecretString --output text)
+        export DB_USER=$(echo $SECRET_JSON | python3 -c "import sys, json; print(json.load(sys.stdin)['DB_USER'])")
+        export DB_PASS=$(echo $SECRET_JSON | python3 -c "import sys, json; print(json.load(sys.stdin)['DB_PASS'])")
+  build:
+    commands:
+      - echo "Build complete."
+  post_build:
+    commands:
+      - echo "Post build step."
+
+artifacts:
+  files:
+    - '**/*'
